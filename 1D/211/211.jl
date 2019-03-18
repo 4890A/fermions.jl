@@ -176,5 +176,5 @@ function main(start, stop, root_grid_step=.001)
 	scatter!(all_roots, ones(length(all_roots)))
 	ylims!(0.0, 3.0)
 	png(string("raw_roots", search_range, ".png"))
-	
+
 end

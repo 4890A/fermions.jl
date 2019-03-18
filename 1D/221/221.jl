@@ -1,6 +1,3 @@
-#using Distributed
-#using SharedArrays
-#addprocs(Sys.CPU_THREADS)
 using LinearAlgebra
 using DelimitedFiles
 using ProgressMeter
@@ -70,41 +67,43 @@ function construct_matrix(f, vals, cutoff, E, g, L)
 	#@sync @distributed for p in vals
 	W = indexify(L)
 	for p1 in vals
-		for p2 in vals
-			for p3 in vals
-				if p1 == p2 || p1 == p3 || p2 == p3
+		for k1 in vals
+
+			for p2 in vals
+				if p2 == p1
 					continue
 				end
-				for k in vals
-					for q in vals
-						if p1 + p2 + p3 + k + q != 0
+				for k2 in vals
+					if k2 == k1
+						continue
+					end
+
+					# can be simplified
+					for ς in vals
+						if p1 + k1 + p2 + k2 + ς != 0
 							continue
 						end
+						ip1, ik1, ip2, ik2 = map(x -> x + cutoff + 1,
+												 [p1, k1, p2, k2])
+						p1k1 = W[ip1, ik1]
+						p2k1 = W[ip2, ik1]
+						p2k2 = W[ip2, ik2]
+						p1k2 = W[ip1, ik2]
 
-						ip1, ip2, ip3 = map(x -> x + cutoff + 1, [p1, p2, p3])
+						T = sum(map(x -> x^2 , [p1, p2, k1, k2, ς]))/2.
+						G = 1 ./(T .+ E)
 
-						p1p2 = W[ip1, ip2]
-						p2p1 = W[ip2, ip1]
-						p2p3 = W[ip2, ip3]
-						p3p2 = W[ip3, ip2]
-						p3p1 = W[ip3, ip1]
-						p1p3 = W[ip1, ip3]
-
-						T = sum(map(x -> x^2 , [p1, p2, p3, k, q]))/2.
-
-						f[:, p1p2, p1p2] += 1 ./(T .+ E)
-						f[:, p1p2, p2p1] -= 1 ./(T .+ E)
-						f[:, p1p2, p2p3] += 1 ./(T .+ E)
-						f[:, p1p2, p3p2] -= 1 ./(T .+ E)
-						f[:, p1p2, p3p1] += 1 ./(T .+ E)
-						f[:, p1p2, p1p3] -= 1 ./(T .+ E)
+						f[:, p1k1, p1k1] += G
+						f[:, p1k1, p2k1] -= G
+						f[:, p1k1, p2k2] += G
+						f[:, p1k1, p1k2] -= G
 					end
 				end
 			end
 		end
 	end
 
-	f = convert(Array{Float64}, f/2.)
+	f = convert(Array{Float64}, f)
 	return f = f * (g /(4. * pi^2))
 end
 
@@ -161,11 +160,10 @@ function find_energies(from, to, density)
 
 	λ = solve(L, e3, alpha)
 	roots =  get_eigen_alpha(λ, alpha, L)
-
+	println(roots)
 	return roots, alpha, λ
 
 end
-
 
 function main(start, stop, root_grid_step=.001)
 
@@ -189,3 +187,5 @@ function main(start, stop, root_grid_step=.001)
 	png(string("raw_roots", search_range, ".png"))
 
 end
+
+find_energies(0,1.0,100)
