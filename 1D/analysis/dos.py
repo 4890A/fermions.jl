@@ -9,6 +9,7 @@ def states(data_file, binwidth):
 
     data = genfromtxt(data_file, delimiter=',')
     plt.hist(data, bins=np.arange(min(data), max(data) + binwidth, binwidth))
+    plt.ylim(0,10)
     plt.show()
 
     return None

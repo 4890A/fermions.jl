@@ -13,6 +13,7 @@ def states(data_file, e3):
     Qb = np.zeros(1000)
     for i in range(1000):
         Qb[i] = np.sum(np.exp(data * e3 * B[i]))
+
     plt.plot(B, Qb)
     plt.xlabel("coldness")
     plt.ylabel("Q")
