@@ -120,8 +120,7 @@ function solve(L, e3, alpha)
 	f0 = zeros(size(alpha)[1], L^2, L^2)
 	f = construct_matrix(f0, vals, cutoff, E, g, L)
 
-	println("diagonalization time")
-	λ = @time diag(f)
+	λ = diag(f)
 	return λ
 
 end
@@ -133,7 +132,11 @@ function get_eigen_alpha(λ, alpha, L)
 		try
 			spl = Dierckx.Spline1D(alpha, λ[:,i] .- 1.0)
 			root_list = roots(spl)
-			push!(eigen_alpha, root_list...)
+			for root_check in root_list
+				if derivative(spl, root_check) < 3000
+					push!(eigen_alpha, root_check)
+				end
+			end
 		catch
 			continue
 		end
@@ -185,7 +188,9 @@ function main(start, stop, root_grid_step=.001)
 	graph_data = find_energies(search_range[1], search_range[end], 503)
 	plot(graph_data[2], graph_data[3], legend = false)
 	scatter!(all_roots, ones(length(all_roots)))
-	ylims!(.9, 1.1)
+	ylims!(-3., 3.0)
 	png(string("raw_roots", search_range, ".png"))
 
 end
+
+main(-4.6, -4.2, .001)

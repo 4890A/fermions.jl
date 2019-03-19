@@ -79,7 +79,7 @@ function construct_matrix(f, vals, cutoff, E, g, L)
 					end
 
 					ς::Int = - (p1 + k1 + p2 + k2)
-					if ~ (ς in vals) 
+					if ~ (ς in vals)
 						continue
 					end
 

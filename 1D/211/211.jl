@@ -132,7 +132,7 @@ function get_eigen_alpha(λ, alpha, L)
 end
 
 function find_energies(from, to, density)
-	L = 31
+	L = 13
 	e3 = 7.5
 	alpha = collect(range(from; length=density, stop= to))
 

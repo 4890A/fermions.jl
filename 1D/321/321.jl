@@ -120,6 +120,7 @@ function construct_matrix(f, vals, cutoff, E, g, L)
 							f[:, i1, j5] -= G
 							f[:, i1, i6] -= G
 							f[:, i1, j6] += G
+
 						end
 					end
 				end
@@ -154,6 +155,7 @@ function get_eigen_alpha(λ, alpha, L)
 		try
 			spl = Dierckx.Spline1D(alpha, λ[:,i] .- 1.0)
 			root_list = roots(spl)
+			# todo: implement pole check
 			push!(eigen_alpha, root_list...)
 		catch
 			continue
@@ -194,7 +196,7 @@ function main(start, stop, root_grid_step=.001, graphics = false)
 	# write roots to csv
 	writedlm( string("raw_roots", search_range, ".csv"),  all_roots, ',')
 	# graph roots on λ curves for debugging
-	
+
 	if graphics == true
 		graph_data = find_energies(search_range[1], search_range[end], 503)
 		plot(graph_data[2], graph_data[3], legend = false)

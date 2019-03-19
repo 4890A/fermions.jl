@@ -5,10 +5,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy import genfromtxt
 
-def states(data_file, binwidth):
+def states(data_file, e3):
 
     data = genfromtxt(data_file, delimiter=',')
-    plt.hist(data, bins=np.arange(min(data), max(data) + binwidth, binwidth))
+    En = data * e3
+    B = np.linspace(0,3,1000)
+    Qb = np.zeros(1000)
+    for i in range(1000):
+        Qb[i] = np.sum(np.exp(data * e3 * B[i]))
+    plt.plot(B, Qb)
+    plt.xlabel("coldness")
+    plt.ylabel("Q")
     plt.show()
 
     return None
@@ -19,13 +26,13 @@ def main():
                         help="csv of energies\n"
                              ""
                         )
-    parser.add_argument("binwidth", type=float,
-                        help="width of histogram bin"
+    parser.add_argument("e3", type=float,
+                        help="trimer_binding_energy"
                              "try 500"
                         )
 
     args = parser.parse_args()
-    states(args.file, args.binwidth)
+    states(args.file, args.e3)
     return None
 
 main()
