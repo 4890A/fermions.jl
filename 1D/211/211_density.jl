@@ -11,8 +11,8 @@ using LinearAlgebra
 using Dierckx
 using FFTW
 
-using Plots
-gr()
+using PyPlot
+pygui(true)
 
 struct SETUP
 
@@ -145,14 +145,13 @@ function get_eigen_alpha(λ, alpha, L)
 	return eigen_alpha
 end
 
-function find_energies(from, to, density)
-	L = 15
-	e3 = 1e-4
+function find_energies(from, to, density, e3, n)
+	L = 71
 	alpha = collect(range(from; length=density, stop= to))
 
 	λ = solve(L, e3, alpha)
 	roots =  get_eigen_alpha(λ, alpha, L)
-	ground_alpha = [roots[end]]
+	ground_alpha = [roots[end - n]]
 	println(ground_alpha)
 
 	eval, evec = solve(L, e3, ground_alpha, true)
@@ -201,12 +200,30 @@ function find_phi(f, L, ground_alpha, e3)
 	return ϕ
 end
 
+function xdensity(A)
+	l = size(A)[1]
+	B = zeros(l,l)
+	center = cld(l,2)
+	for i in 1:l
+		B[:,:] += A[:,:,center,i]
+	end
+	return B
+end
 
 function main(start, stop, density)
-	ϕ = find_energies(start, stop, density)
+	println("trimer binding energy e3 = ?")
+	e3 = parse(Float64,readline(stdin))
+	println("excited state? 0 for ground state")
+	n = parse(Int,readline(stdin))
+
+	ϕ = find_energies(start, stop, density, e3, n)
+
 	ψ = fft(ϕ)
 	ψ2 = abs.(ψ)
-	npzwrite("fft.npz", ψ2)
-	npzwrite("pwf.npz",abs.(ϕ))
+	# npzwrite("fft.npz", ψ2)
+	# npzwrite("pwf.npz",abs.(ϕ))
+
+	B = xdensity(ψ2)
+	imshow(B[:,end:-1:1],cmap="jet",interpolation="bilinear")
 
 end
